@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Quiz Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0KOVEMcApliTMkCoत्तरOVcasV8rTdEHioNWgtUo7speAPjCma34MA==" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+    <style>
+      :root, html[data-theme='light'] {
+        --bg-primary: 248 250 252; /* slate-50 */
+        --bg-secondary: 255 255 255; /* white */
+        --text-primary: 15 23 42; /* slate-900 */
+        --text-secondary: 51 65 85; /* slate-600 */
+        --accent: 37 99 235; /* blue-600 */
+        --border-color: 226 232 240; /* slate-200 */
+        --correct: 22 163 74; /* green-600 */
+        --incorrect: 220 38 38; /* red-600 */
+        --code-bg: 241 245 249; /* slate-100 */
+      }
+      html[data-theme='dark-blue'] {
+        --bg-primary: 30 41 59; /* slate-800 */
+        --bg-secondary: 51 65 85; /* slate-700 */
+        --text-primary: 248 250 252; /* slate-50 */
+        --text-secondary: 148 163 184; /* slate-400 */
+        --accent: 56 189 248; /* sky-400 */
+        --border-color: 71 85 105; /* slate-600 */
+        --correct: 34 197 94; /* green-500 */
+        --incorrect: 239 68 68; /* red-500 */
+        --code-bg: 30 41 59; /* slate-800 */
+      }
+      html[data-theme='forest'] {
+        --bg-primary: 28 44 43;
+        --bg-secondary: 40 60 59;
+        --text-primary: 228 229 220;
+        --text-secondary: 161 170 162;
+        --accent: 139 195 74;
+        --border-color: 63 88 87;
+        --correct: 104 191 108;
+        --incorrect: 218 97 97;
+        --code-bg: 28 44 43;
+      }
+      /* High Contrast Accessibility Theme */
+      html[data-contrast='high'] {
+        --bg-primary: 0 0 0; /* black */
+        --bg-secondary: 17 17 17; /* near-black */
+        --text-primary: 255 255 255; /* white */
+        --text-secondary: 220 220 220; /* light-gray */
+        --accent: 255 255 0; /* yellow */
+        --border-color: 255 255 255; /* white */
+        --correct: 0 255 0; /* lime green */
+        --incorrect: 255 0 0; /* red */
+        --code-bg: 17 17 17;
+      }
+
+      body {
+        background-color: rgb(var(--bg-primary));
+        color: rgb(var(--text-primary));
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Styles for rendered content */
+      .prose-styles pre {
+        background-color: rgb(var(--code-bg));
+        border: 1px solid rgb(var(--border-color));
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+      .prose-styles pre code.hljs {
+        background: transparent !important;
+        color: rgb(var(--text-primary));
+      }
+      .prose-styles code:not(pre code) {
+        background-color: rgba(var(--accent), 0.1);
+        color: rgb(var(--accent));
+        padding: 0.2em 0.4em;
+        margin: 0;
+        font-size: 85%;
+        border-radius: 6px;
+      }
+      .prose-styles .katex {
+        font-size: 1.1em;
+        color: rgb(var(--text-primary));
+      }
+      .prose-styles p {
+        margin-bottom: 1rem;
+      }
+      .prose-styles p:last-child {
+        margin-bottom: 0;
+      }
+    </style>
+    <script>
+      // Apply theme before page renders to avoid flash of unstyled content
+      (function() {
+        try {
+          const settings = JSON.parse(localStorage.getItem('quizAppSettings'));
+          if (settings) {
+            if (settings.theme) {
+              document.documentElement.setAttribute('data-theme', settings.theme);
+            }
+            if (settings.highContrast) {
+              document.documentElement.setAttribute('data-contrast', 'high');
+            }
+          } else {
+             document.documentElement.setAttribute('data-theme', 'forest');
+          }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'forest');
+        }
+      })();
+
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': 'rgb(var(--bg-primary) / <alpha-value>)',
+              'secondary': 'rgb(var(--bg-secondary) / <alpha-value>)',
+              'accent': 'rgb(var(--accent) / <alpha-value>)',
+              'text-primary': 'rgb(var(--text-primary) / <alpha-value>)',
+              'text-secondary': 'rgb(var(--text-secondary) / <alpha-value>)',
+              'border-color': 'rgb(var(--border-color) / <alpha-value>)',
+              'correct': 'rgb(var(--correct) / <alpha-value>)',
+              'incorrect': 'rgb(var(--incorrect) / <alpha-value>)',
+            }
+          }
+        }
+      }
+    </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension/lib/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

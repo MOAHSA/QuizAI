@@ -1,0 +1,5 @@
+{
+  "name": "AI Quiz Generator",
+  "description": "A powerful tool to generate, take, and review customized quizzes on any topic. Features multiple question types, detailed explanations, an in-exam AI assistant, and the ability to export exams as self-contained HTML files.",
+  "requestFramePermissions": []
+}
